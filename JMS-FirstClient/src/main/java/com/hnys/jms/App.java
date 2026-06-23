@@ -1,0 +1,44 @@
+package com.hnys.jms;
+
+import jakarta.jms.*;
+
+import javax.naming.InitialContext;
+
+public class App {
+    public static void main(String[] args) {
+        try {
+            InitialContext context = new InitialContext();
+            TopicConnectionFactory factory = (TopicConnectionFactory) context.lookup("myTopicConnectionFactory");
+
+            TopicConnection connection = factory.createTopicConnection();
+            connection.start();
+
+            TopicSession session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+
+            Topic topic = (Topic) context.lookup("myTopic");
+
+            TopicSubscriber subscriber = session.createSubscriber(topic);
+
+//            Message message = subscriber.receive();
+//            System.out.println(message);
+
+            subscriber.setMessageListener(new MessageListener() {
+                @Override
+                public void onMessage(Message message) {
+
+                    try {
+                        String msg = message.getBody(String.class);
+                        System.out.println(msg);
+                    } catch (JMSException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        while (true) {}
+    }
+}
