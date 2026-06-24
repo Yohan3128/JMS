@@ -8,7 +8,7 @@ public class App {
     public static void main(String[] args) {
         try {
             InitialContext context = new InitialContext();
-            TopicConnectionFactory factory = (TopicConnectionFactory) context.lookup("myTopicConnectionFactory");
+            TopicConnectionFactory factory = (TopicConnectionFactory) context.lookup("jms/myTopicConnectionFactory");
 
             TopicConnection connection = factory.createTopicConnection();
             connection.start();

@@ -16,19 +16,17 @@ public class DefaultConnection {
 
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-           Topic topic= (Topic) context.lookup("myTopic");
+//            Topic topic = (Topic) context.lookup("myTopic");
 
-            MessageConsumer consumer = session.createConsumer(topic);
-            consumer.setMessageListener(new MessageListener() {
-                public void onMessage(Message message) {
-                    try {
-                        System.out.println(message.getBody(String.class));
-                    } catch (JMSException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
+            Topic topic = session.createTopic("myTopic");
 
+            MessageProducer producer = session.createProducer(topic);
+
+            for (int i = 1; i <= 10; i++) {
+                TextMessage message = session.createTextMessage();
+                message.setText("Hello World" + i);
+                producer.send(message);
+            }
 
         } catch (NamingException e) {
             throw new RuntimeException(e);
