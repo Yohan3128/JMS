@@ -1,287 +1,136 @@
 # JMS Practical Project
 
-A Java Message Service (JMS) practical project demonstrating pub/sub messaging pattern with two client applications communicating through a shared topic.
+This workspace contains a small Java JMS learning project built around Payara/GlassFish and Jakarta Messaging. It includes two Java client modules and a Jakarta EE web application module that demonstrate both topic-based publish/subscribe messaging and queue-based messaging.
 
 ## Project Overview
 
-This is a multi-module Maven project that implements a **Publisher-Subscriber (Pub/Sub)** messaging pattern using JMS with Payara application server.
+The project is organized as three Maven modules:
 
-### Architecture
-
-The project consists of two independent Maven modules:
-
-```
-JMS (Parent Project)
-├── JMS-FirstClient   (Subscriber/Consumer)
-└── JMS-SecondClient  (Publisher/Producer)
-```
+- JMS-FirstClient: a JMS topic subscriber example
+- JMS-SecondClient: a JMS topic publisher and queue sender example
+- jms-webapp: a simple Jakarta EE web application with a message-driven bean receiver
 
 ## Modules
 
-### 1. JMS-FirstClient (Subscriber)
+### 1. JMS-FirstClient
 
-**Purpose:** Listens to messages published on a JMS topic and processes them.
+Purpose:
+- Demonstrates a topic subscriber that listens for messages on the JMS topic named myTopic.
 
-**Key Features:**
-- Subscribes to `myTopic`
-- Uses `MessageListener` for asynchronous message processing
-- Receives and displays messages in real-time
-- Maintains an infinite loop to keep listening
+Main classes:
+- com.hnys.jms.App: creates a topic connection, subscribes to myTopic, and uses a MessageListener to print incoming messages.
+- com.hnys.jms.DefaultConnection: contains a separate example that uses the default connection factory.
 
-**Main Class:** `com.hnys.jms.App`
+### 2. JMS-SecondClient
 
-```
-Location: JMS-FirstClient/src/main/java/com/hnys/jms/App.java
-```
+Purpose:
+- Demonstrates a topic publisher and a queue sender.
 
-**Functionality:**
-- Establishes a TopicConnection using JNDI lookup
-- Creates a TopicSession with AUTO_ACKNOWLEDGE mode
-- Sets up a MessageListener callback for incoming messages
-- Prints received messages to the console
+Main classes:
+- com.hnys.jms.App: reads console input and publishes each line as a text message to myTopic.
+- com.hnys.jms.QueueSender: sends a series of text messages to the queue named myQueue.
 
-### 2. JMS-SecondClient (Publisher)
+### 3. jms-webapp
 
-**Purpose:** Publishes messages to a JMS topic for subscribers to consume.
+Purpose:
+- Demonstrates a Jakarta EE web application with a message-driven bean receiver.
 
-**Key Features:**
-- Publishes messages to `myTopic`
-- Interactive console input for sending messages
-- Type "exit" to terminate the publisher
-- Sends TextMessages to all subscribers
-
-**Main Class:** `com.hnys.jms.App`
-
-```
-Location: JMS-SecondClient/src/main/java/com/hnys/jms/App.java
-```
-
-**Functionality:**
-- Establishes a TopicConnection using JNDI lookup
-- Creates a TopicSession with AUTO_ACKNOWLEDGE mode
-- Sets up a TopicPublisher
-- Accepts user input via Scanner
-- Publishes each line as a TextMessage to the topic
+Main classes:
+- com.hnys.jms.MessageReceiver: an MDB that receives messages from myTopic.
+- src/main/webapp/index.jsp: the default JSP page for the web application.
 
 ## Technical Stack
 
-- **Language:** Java 17
-- **Build Tool:** Maven
-- **JMS Provider:** Payara Embedded (Version: 6.2025.11)
-- **JMS API:** Jakarta JMS
-- **Connection Method:** JNDI Lookup
+- Java 17
+- Maven
+- Jakarta JMS
+- Jakarta EE 10
+- Payara / GlassFish-compatible runtime
 
 ## Prerequisites
 
-- Java 17 or higher installed
-- Maven 3.6.0 or higher
-- Payara Application Server or Embedded Payara instance
+Before running the examples, make sure you have:
 
-## Configuration
+- Java 17 or newer installed
+- Maven 3.6+ installed
+- A Payara server running and configured with the JMS resources used by the code
 
-### JNDI Resources
+## Required JMS Resources
 
-The project relies on the following JNDI resources that must be configured in the application server:
+The examples rely on JNDI resources such as:
 
-| Resource Name | Type | Description |
-|---------------|------|-------------|
-| `myTopicConnectionFactory` | TopicConnectionFactory | Factory for creating topic connections |
-| `myTopic` | Topic | The JMS topic for pub/sub communication |
+- myTopicConnectionFactory
+- myTopic
+- myQueueConnectionFactory
+- myQueue
 
-These resources need to be configured in Payara's JNDI provider (typically via `glassfish-resources.xml` or admin console).
+These should be configured in the Payara server environment before executing the clients.
 
-## Building the Project
+## Build the Project
 
-### Build All Modules
+From each module directory, run:
 
 ```bash
 mvn clean install
 ```
-
-### Build Individual Module
-
-```bash
-# First Client (Subscriber)
-cd JMS-FirstClient
-mvn clean install
-
-# Second Client (Publisher)
-cd JMS-SecondClient
-mvn clean install
-```
-
-## Running the Application
-
-### Step 1: Start Payara Server
-
-Ensure Payara server is running and configured with the required JMS resources (myTopic and myTopicConnectionFactory).
-
-### Step 2: Start the Subscriber (FirstClient)
-
-```bash
-cd JMS-FirstClient
-mvn exec:java -Dexec.mainClass="com.hnys.jms.App"
-```
-
-You should see output indicating it's listening for messages.
-
-### Step 3: Start the Publisher (SecondClient)
-
-In another terminal:
-
-```bash
-cd JMS-SecondClient
-mvn exec:java -Dexec.mainClass="com.hnys.jms.App"
-```
-
-### Step 4: Send Messages
-
-In the Publisher terminal, type messages and press Enter. Each message will be:
-- Published to the topic
-- Received by the subscriber
-- Printed in the subscriber's console
 
 Example:
 
-**Publisher Console:**
-```
-Enter Message or type 'exit' to exit
-Hello World
-Test Message 123
-exit
+```bash
+cd JMS-FirstClient
+mvn clean install
 ```
 
-**Subscriber Console:**
+## Run the Examples
+
+### Run the topic subscriber
+
+```bash
+cd JMS-FirstClient
+mvn exec:java -Dexec.mainClass="com.hnys.jms.App"
 ```
-Hello World
-Test Message 123
+
+### Run the topic publisher
+
+Open a second terminal:
+
+```bash
+cd JMS-SecondClient
+mvn exec:java -Dexec.mainClass="com.hnys.jms.App"
 ```
+
+Type messages in the publisher console. The subscriber should print them when the topic is reached.
+
+### Run the queue sender
+
+```bash
+cd JMS-SecondClient
+mvn exec:java -Dexec.mainClass="com.hnys.jms.QueueSender"
+```
+
+### Deploy and test the web application
+
+Deploy the jms-webapp module to Payara and observe the MDB logs for incoming messages.
 
 ## Project Structure
 
-```
+```text
 JMS/
-├── README.md                          # This file
+├── README.md
 ├── JMS-FirstClient/
-│   ├── pom.xml                        # Maven configuration
-│   └── src/
-│       ├── main/
-│       │   ├── java/
-│       │   │   └── com/hnys/jms/
-│       │   │       └── App.java       # Subscriber implementation
-│       │   └── resources/
-│       └── test/
-│           └── java/
-│
-└── JMS-SecondClient/
-    ├── pom.xml                        # Maven configuration
-    └── src/
-        ├── main/
-        │   ├── java/
-        │   │   └── com/hnys/jms/
-        │   │       └── App.java       # Publisher implementation
-        │   └── resources/
-        └── test/
-            └── java/
+│   └── src/main/java/com/hnys/jms/
+├── JMS-SecondClient/
+│   └── src/main/java/com/hnys/jms/
+└── jms-webapp/
+    └── src/main/java/com/hnys/jms/
 ```
 
-## Message Flow Diagram
+## Notes
 
-```
-┌─────────────────┐
-│ JMS-SecondClient│ (Publisher)
-│   (App.java)    │
-└────────┬────────┘
-         │
-         │ Publishes TextMessages
-         │
-         ▼
-    ┌─────────────┐
-    │   myTopic   │ (JMS Topic)
-    └─────────────┘
-         │
-         │ Routes Messages
-         │
-         ▼
-┌─────────────────────────┐
-│  JMS-FirstClient        │ (Subscriber)
-│  (App.java)             │
-│  MessageListener Setup  │
-└─────────────────────────┘
-```
+- The current examples are intended for learning and experimentation with JMS.
+- The web module is a basic Jakarta EE example and can be extended with a richer UI or additional messaging logic.
+- If a lookup fails, verify that the corresponding JMS resource exists in the Payara server configuration.
 
-## Key Concepts Used
+## Last Updated
 
-### 1. **Topic (Pub/Sub Pattern)**
-- Multiple subscribers can receive the same message
-- Publishers don't need to know about subscribers
-- Messages are distributed to all active subscribers at the time of publishing
-
-### 2. **JNDI (Java Naming and Directory Interface)**
-- Decouples applications from resource configurations
-- Resources are looked up by name rather than hardcoded
-
-### 3. **MessageListener**
-- Asynchronous message consumption
-- Callback-based approach for handling incoming messages
-- Non-blocking subscriber
-
-### 4. **Session Acknowledgment Mode**
-- `AUTO_ACKNOWLEDGE`: Messages are automatically acknowledged upon successful delivery
-
-### 5. **TopicConnection & TopicSession**
-- TopicConnection: Establishes connection to the JMS provider
-- TopicSession: Creates a context for producing/consuming messages
-
-## Troubleshooting
-
-### Connection Issues
-- Verify Payara server is running
-- Check that JNDI resources (myTopicConnectionFactory, myTopic) are properly configured
-- Ensure the server can be accessed from the client
-
-### Resource Not Found
-```
-javax.naming.NameNotFoundException: myTopic
-```
-Solution: Configure the JMS resources in Payara Admin Console or create `glassfish-resources.xml`
-
-### No Messages Received
-- Ensure subscriber is running before publisher sends messages
-- Verify both clients are connecting to the same topic
-- Check Payara server logs for errors
-
-## Future Enhancements
-
-- [ ] Add queue-based messaging (Point-to-Point pattern)
-- [ ] Implement message filtering/selectors
-- [ ] Add persistence layer for messages
-- [ ] Create web UI for monitoring
-- [ ] Add message transformation/serialization
-- [ ] Implement error handling and retry logic
-- [ ] Add unit and integration tests
-- [ ] Configuration externalization (properties file)
-
-## Dependencies
-
-### JMS-FirstClient / JMS-SecondClient
-
-```xml
-<dependency>
-    <groupId>fish.payara.extras</groupId>
-    <artifactId>payara-embedded-all</artifactId>
-    <version>6.2025.11</version>
-</dependency>
-```
-
-## License
-
-This is a practical/educational project. No specific license applied.
-
-## Author
-
-Created as a Java Message Service practical learning project.
-
----
-
-**Last Updated:** 2026-06-23
+2026-06-24
